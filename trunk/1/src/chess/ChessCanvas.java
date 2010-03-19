@@ -33,6 +33,11 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
 class ChessCanvas extends Canvas {
+        /*
+         * Borard color
+            #4D6D92 - #ECECD7
+         *
+         */
 	private static final int PHASE_LOADING = 0;
 	private static final int PHASE_WAITING = 1;
 	private static final int PHASE_THINKING = 2;
@@ -202,8 +207,8 @@ class ChessCanvas extends Canvas {
 	protected void paint(Graphics g) {
 		if (phase == PHASE_LOADING) {
 			// Wait 1 second for resizing
-			width = getWidth();
-			height = getHeight();
+			width   = getWidth();
+			height  = getHeight();
 			for (int i = 0; i < 10; i ++) {
 				if (width != normalWidth || height != normalHeight) {
 					break;
@@ -217,24 +222,32 @@ class ChessCanvas extends Canvas {
 				height = getHeight();
 			}
 			if (!init) {
-				init = true;
+                                // show display info
+                                System.out.println("Display info:"+width+"x"+height+" ");
+
+                                init = true;
 				// "width" and "height" are Full-Screen values
+				String imagePiecePath = "/images/pieces/classic/";
 				String imagePath = "/images/";
 				squareSize = Math.min(width / 8, height / 8);
 				if (false) {
 					// Code Style
 				} else if (squareSize >= 41) {
-					squareSize = 41;
+					//squareSize = 41;
 					imagePath += "large/";
+                                        imagePiecePath += "45px_files/";
 				} else if (squareSize >= 29) {
-					squareSize = 29;
+					//squareSize = 29;
 					imagePath += "medium/";
+                                        imagePiecePath += "30px_files/";
 				} else if (squareSize >= 21) {
-					squareSize = 21;
+					//squareSize = 21;
 					imagePath += "small/";
+                                        imagePiecePath += "30px_files/";
 				} else {
-					squareSize = 16;
+					//squareSize = 16;
 					imagePath += "tiny/";
+                                        imagePiecePath += "30px_files/";
 				}
 				int boardSize = squareSize * 8;
 				try {
@@ -245,26 +258,41 @@ class ChessCanvas extends Canvas {
 						if (IMAGE_NAME[pc] == null) {
 							imgPieces[pc] = null;
 						} else {
-							imgPieces[pc] = Image.createImage(imagePath + IMAGE_NAME[pc] + ".png");
+							imgPieces[pc] = Image.createImage(imagePiecePath + IMAGE_NAME[pc] + ".png");
 						}
 					}
 				} catch (Exception e) {
 					throw new RuntimeException(e.getMessage());
 				}
-				left = (width - boardSize) / 2;
-				top = (height - boardSize) / 2;
-				right = left + boardSize - 32;
-				bottom = top + boardSize - 32;
+				//left = (width - boardSize) / 2;
+				//top = (height - boardSize) / 2;
+                                left    = 0;
+                                top     = 0;
+				right   = left + boardSize - 32;
+				bottom  = top + boardSize - 32;
 			}
 			phase = PHASE_WAITING;
 		}
+                
+                // Background
+                g.setColor(0xFFFFFF);
+                g.fillRect(0,0,width,height);
+                /*
 		for (int x = 0; x < width; x += widthBackground) {
 			for (int y = 0; y < height; y += heightBackground) {
 				g.drawImage(imgBackground, x, y, Graphics.LEFT + Graphics.TOP);
 			}
-		}
-		g.drawImage(imgBoard, width / 2, height / 2, Graphics.HCENTER + Graphics.VCENTER);
-		for (int sq = 0; sq < 128; sq ++) {
+		}*/
+
+                //g.drawImage(imgBoard, width / 2, height / 2, Graphics.HCENTER + Graphics.VCENTER);
+		//g.drawImage(imgBoard, 0, 0, Graphics.TOP + Graphics.LEFT);
+                for (int sq = 0; sq < 128; sq ++) {
+                    if (Position.IN_BOARD(sq)) {
+                        drawVoidSquare(g, sq);
+                    }
+                }
+
+                for (int sq = 0; sq < 128; sq ++) {
 			if (Position.IN_BOARD(sq)) {
 				int pc = pos.squares[sq];
 				if (pc > 0) {
@@ -286,7 +314,7 @@ class ChessCanvas extends Canvas {
 		if (midlet.flipped) {
 			sq = Position.SQUARE_FLIP(sq);
 		}
-		drawSquare(g, imgCursor, sq);
+		drawCursorSquare(g, sq);
 		if (phase == PHASE_THINKING) {
 			int x, y;
 			if (midlet.flipped) {
@@ -446,6 +474,36 @@ class ChessCanvas extends Canvas {
 		int sqY = top + (Position.RANK_Y(sqFlipped) - Position.RANK_TOP) * squareSize;
 		g.drawImage(image, sqX, sqY, Graphics.LEFT + Graphics.TOP);
 	}
+        
+        private void drawVoidSquare(Graphics g, int sq) {
+		int sqFlipped   = (midlet.flipped ? Position.SQUARE_FLIP(sq) : sq);
+                int sqFlippedX  = Position.FILE_X(sqFlipped);
+                int sqFlippedY  = Position.RANK_Y(sqFlipped);
+
+		int sqX = left + (sqFlippedX - Position.FILE_LEFT) * squareSize;
+		int sqY = top + (sqFlippedY - Position.RANK_TOP) * squareSize;
+		
+                if ((sqFlippedX+sqFlippedY)%2==0) {
+                    g.setColor(0x4D6D92);
+                } else {
+                    g.setColor(0xECECD7);
+                }
+                g.fillRect(sqX, sqY, squareSize, squareSize);
+	}
+        
+        private void drawCursorSquare(Graphics g, int sq) {
+		int sqFlipped   = (midlet.flipped ? Position.SQUARE_FLIP(sq) : sq);
+                int sqFlippedX  = Position.FILE_X(sqFlipped);
+                int sqFlippedY  = Position.RANK_Y(sqFlipped);
+
+		int sqX = left + (sqFlippedX - Position.FILE_LEFT) * squareSize;
+		int sqY = top + (sqFlippedY - Position.RANK_TOP) * squareSize;
+
+                g.setColor(0x333333);
+                g.drawRect(sqX, sqY, squareSize-1, squareSize-1);
+                g.drawRect(sqX+1, sqY+1, squareSize-3, squareSize-3);
+	}
+
 
 	/** Player Move Result */
 	private boolean getResult() {
