@@ -33,86 +33,66 @@ import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
 class ChessCanvas extends Canvas {
-        /*
-         * Borard color
-            #4D6D92 - #ECECD7
-         *
-         */
-	private static final int PHASE_LOADING = 0;
-	private static final int PHASE_WAITING = 1;
+
+	private static final int PHASE_LOADING	= 0;
+	private static final int PHASE_WAITING	= 1;
 	private static final int PHASE_THINKING = 2;
 	private static final int PHASE_EXITTING = 3;
 
-	private static final int RESP_CLICK = 0;
-	private static final int RESP_ILLEGAL = 1;
-	private static final int RESP_MOVE = 2;
-	private static final int RESP_MOVE2 = 3;
-	private static final int RESP_CAPTURE = 4;
-	private static final int RESP_CAPTURE2 = 5;
-	private static final int RESP_SPECIAL = 6;
-	private static final int RESP_SPECIAL2 = 7;
-	private static final int RESP_CHECK = 8;
-	private static final int RESP_CHECK2 = 9;
-	private static final int RESP_WIN = 10;
-	private static final int RESP_DRAW = 11;
-	private static final int RESP_LOSS = 12;
+	private static final int RESP_CLICK		= 0;
+	private static final int RESP_ILLEGAL	= 1;
+	private static final int RESP_MOVE		= 2;
+	private static final int RESP_MOVE2		= 3;
+	private static final int RESP_CAPTURE	= 4;
+	private static final int RESP_CAPTURE2	= 5;
+	private static final int RESP_SPECIAL	= 6;
+	private static final int RESP_SPECIAL2	= 7;
+	private static final int RESP_CHECK		= 8;
+	private static final int RESP_CHECK2	= 9;
+	private static final int RESP_WIN		= 10;
+	private static final int RESP_DRAW		= 11;
+	private static final int RESP_LOSS		= 12;
 
-	private static Image imgBackground, imgChess, imgThinking;
+	private static Image imgChess;
 	private static final String[] IMAGE_NAME = {
 		null, null, null, null, null, null, null, null,
 		"wk", "wq", "wr", "wb", "wn", "wp", null, null,
 		"bk", "bq", "br", "bb", "bn", "bp", null, null,
 	};
-	private static int widthBackground, heightBackground;
 	private static Font fontLarge = Font.getFont(Font.FACE_SYSTEM,
 			Font.STYLE_BOLD + Font.STYLE_ITALIC, Font.SIZE_LARGE);
 	private static Font fontSmall = Font.getFont(Font.FACE_SYSTEM,
 			Font.STYLE_BOLD, Font.SIZE_SMALL);
 
-	static {
-		try {
-			imgBackground = Image.createImage("/images/background.png");
-			imgChess = Image.createImage("/images/chess.png");
-			imgThinking = Image.createImage("/images/thinking.png");
-		} catch (Exception e) {
-			throw new RuntimeException(e.getMessage());
-		}
-		widthBackground = imgBackground.getWidth();
-		heightBackground = imgBackground.getHeight();
-	}
-
-	ChessMIDlet midlet;
-	byte[] retractData = new byte[ChessMIDlet.RS_DATA_LEN];
+	FranzChessMIDlet midlet;
+	byte[] retractData = new byte[ChessThread.RS_DATA_LEN];
 
 	private Position pos = new Position();
 	private Search search = new Search(pos, 12);
 	private String message;
 	private int cursorX, cursorY;
 	private int sqSelected, mvLast;
-	// Assume FullScreenMode = false
+
 	private int normalWidth = getWidth();
 	private int normalHeight = getHeight();
 
-	private Alert altAbout = new Alert("About \"Mobile Chess\"", null, imgChess, AlertType.INFO);
-	private Alert altBack = new Alert("Mobile Chess", "Abort Current Game?", null, AlertType.CONFIRMATION);
+	private Alert altAbout	= new Alert("About \"Mobile Chess\"", null, imgChess, AlertType.INFO);
+	private Alert altBack	= new Alert("Mobile Chess", "Abort Current Game?", null, AlertType.CONFIRMATION);
 
-	Command cmdBack = new Command("Back", Command.ITEM, 1);
-	Command cmdRetract = new Command("Retract", Command.ITEM, 1);
-	Command cmdAbout = new Command("About", Command.ITEM, 1);
-	Command cmdBackOK = new Command("OK", Command.OK, 1);
-	Command cmdBackCancel = new Command("Cancel", Command.CANCEL, 1);
+	Command cmdBack			= new Command("Back", Command.ITEM, 1);
+	Command cmdRetract		= new Command("Retract", Command.ITEM, 1);
+	Command cmdAbout		= new Command("About", Command.ITEM, 1);
+	Command cmdBackOK		= new Command("OK", Command.OK, 1);
+	Command cmdBackCancel	= new Command("Cancel", Command.CANCEL, 1);
 
 	volatile int phase = PHASE_LOADING;
 
 	private boolean init = false;
-	private Image imgBoard, imgSelected, imgCursor;
 	private Image[] imgPieces = new Image[24];
 	private int squareSize, width, height;
 	private int left, right, top, bottom;
 
-	private boolean bNoKeyPad = false;
-
-	ChessCanvas(ChessMIDlet midlet_) {
+	public ChessCanvas(FranzChessMIDlet midlet_) {
 		this.midlet = midlet_;
 		setFullScreenMode(true);
 		altAbout.setTimeout(Alert.FOREVER);
@@ -126,8 +106,7 @@ class ChessCanvas extends Canvas {
 		altBack.setCommandListener(new CommandListener() {
 			public void commandAction(Command c, Displayable d) {
 				if (c == cmdBackOK) {
-					midlet.rsData[0] = 0;
-					midlet.startMusic("form");
+					midlet.thread.rsData[0] = 0;
 					Display.getDisplay(midlet).setCurrent(midlet.form);
 				} else {
 					Display.getDisplay(midlet).setCurrent(ChessCanvas.this);
@@ -139,11 +118,6 @@ class ChessCanvas extends Canvas {
 		addCommand(cmdBack);
 		addCommand(cmdRetract);
 		addCommand(cmdAbout);
-
-		String noKeyPadValue = midlet.getAppProperty("MobileChess-NoKeyPad");
-		if (noKeyPadValue != null && noKeyPadValue.toLowerCase().equals("true")) {
-			bNoKeyPad = true;
-		}
 
 		setCommandListener(new CommandListener() {
 			public void commandAction(Command c, Displayable d) {
@@ -167,28 +141,28 @@ class ChessCanvas extends Canvas {
 		cursorX = 4;
 		cursorY = 6;
 		sqSelected = mvLast = 0;
-		if (midlet.rsData[0] == 0) {
+		if (midlet.thread.rsData[0] == 0) {
 			// pos.fromFen(Position.STARTUP_FEN[midlet.handicap]);
 			pos.fromFen(midlet.txtFen.getString());
 		} else {
 			// Restore Record-Score Data
 			pos.clearBoard();
 			for (int sq = 0; sq < 128; sq ++) {
-				int pc = midlet.rsData[sq + 256];
+				int pc = midlet.thread.rsData[sq + 256];
 				if (pc > 0) {
 					pos.addPiece(sq, pc);
 				}
 			}
-			if (midlet.flipped) {
+			if (midlet.thread.flipped) {
 				pos.changeSide();
 			}
-			pos.setIrrev(midlet.rsData[384], midlet.rsData[385] & 255);
+			pos.setIrrev(midlet.thread.rsData[384], midlet.thread.rsData[385] & 255);
 		}
 		// Backup Retract Status
-		System.arraycopy(midlet.rsData, 0, retractData, 0, ChessMIDlet.RS_DATA_LEN);
+		System.arraycopy(midlet.thread.rsData, 0, retractData, 0, ChessThread.RS_DATA_LEN);
 		// Call "responseMove()" if Computer Moves First
 		phase = PHASE_LOADING;
-		if ((pos.sdPlayer == 0 ? midlet.flipped : !midlet.flipped) && !pos.isMate()) {
+		if ((pos.sdPlayer == 0 ? midlet.thread.flipped : !midlet.thread.flipped) && !pos.isMate()) {
 			new Thread() {
 				public void run() {
 					while (phase == PHASE_LOADING) {
@@ -222,10 +196,8 @@ class ChessCanvas extends Canvas {
 				height = getHeight();
 			}
 			if (!init) {
-                                // show display info
-                                System.out.println("Display info:"+width+"x"+height+" ");
-
-                                init = true;
+    
+                init = true;
 				// "width" and "height" are Full-Screen values
 				String imagePiecePath = "/images/pieces/classic/";
 				String imagePath = "/images/";
@@ -235,25 +207,22 @@ class ChessCanvas extends Canvas {
 				} else if (squareSize >= 41) {
 					//squareSize = 41;
 					imagePath += "large/";
-                                        imagePiecePath += "45px_files/";
+                    imagePiecePath += "45px_files/";
 				} else if (squareSize >= 29) {
 					//squareSize = 29;
 					imagePath += "medium/";
-                                        imagePiecePath += "30px_files/";
+					imagePiecePath += "30px_files/";
 				} else if (squareSize >= 21) {
 					//squareSize = 21;
 					imagePath += "small/";
-                                        imagePiecePath += "30px_files/";
+					imagePiecePath += "30px_files/";
 				} else {
 					//squareSize = 16;
 					imagePath += "tiny/";
-                                        imagePiecePath += "30px_files/";
+					imagePiecePath += "30px_files/";
 				}
 				int boardSize = squareSize * 8;
 				try {
-					imgBoard = Image.createImage(imagePath + "board.png");
-					imgSelected = Image.createImage(imagePath + "selected.png");
-					imgCursor = Image.createImage(imagePath + "cursor.png");
 					for (int pc = 0; pc < 24; pc ++) {
 						if (IMAGE_NAME[pc] == null) {
 							imgPieces[pc] = null;
@@ -264,104 +233,79 @@ class ChessCanvas extends Canvas {
 				} catch (Exception e) {
 					throw new RuntimeException(e.getMessage());
 				}
-				//left = (width - boardSize) / 2;
-				//top = (height - boardSize) / 2;
-                                left    = 0;
-                                top     = 0;
-				right   = left + boardSize - 32;
-				bottom  = top + boardSize - 32;
+				// Set board on top left of screen
+				left    = 0;
+				top     = 0;
+				right   = left	+ boardSize - 32;
+				bottom  = top	+ boardSize - 32;
 			}
 			phase = PHASE_WAITING;
 		}
                 
-                // Background
-                g.setColor(0xFFFFFF);
-                g.fillRect(0,0,width,height);
-                /*
-		for (int x = 0; x < width; x += widthBackground) {
-			for (int y = 0; y < height; y += heightBackground) {
-				g.drawImage(imgBackground, x, y, Graphics.LEFT + Graphics.TOP);
-			}
-		}*/
+		// Background
+		g.setColor(0xFFFFFF);
+		g.fillRect(0,0,width,height);
 
-                //g.drawImage(imgBoard, width / 2, height / 2, Graphics.HCENTER + Graphics.VCENTER);
-		//g.drawImage(imgBoard, 0, 0, Graphics.TOP + Graphics.LEFT);
-                for (int sq = 0; sq < 128; sq ++) {
-                    if (Position.IN_BOARD(sq)) {
-                        drawVoidSquare(g, sq);
-                    }
-                }
-
-                for (int sq = 0; sq < 128; sq ++) {
+		// Borad
+		for (int sq = 0; sq < 128; sq ++) {
 			if (Position.IN_BOARD(sq)) {
-				int pc = pos.squares[sq];
-				if (pc > 0) {
-					drawSquare(g, imgPieces[pc], sq);
-				}
+				drawVoidSquare(g, sq);
 			}
 		}
+
+		// Last move decoration
 		int sqSrc = 0;
-		int sqDst = 0;
+		int sqDst = 0;		
 		if (mvLast > 0) {
 			sqSrc = Position.SRC(mvLast);
 			sqDst = Position.DST(mvLast);
-			drawSquare(g, imgSelected, sqSrc);
-			drawSquare(g, imgSelected, sqDst);
+			drawSrcSquare(g, sqSrc);
+			drawDstSquare(g, sqDst);
 		} else if (sqSelected > 0) {
-			drawSquare(g, imgSelected, sqSelected);
+			drawSrcSquare(g, sqSelected);
 		}
+
+		// Piece in board
+        for (int sq = 0; sq < 128; sq ++) {
+			if (Position.IN_BOARD(sq)) {
+				int pc = pos.squares[sq];
+				if (pc > 0) {
+					drawPieceSquare(g, imgPieces[pc], sq);
+				}
+			}
+		}
+
+		// Cursor on board
 		int sq = Position.COORD_XY(cursorX + Position.FILE_LEFT, cursorY + Position.RANK_TOP);
-		if (midlet.flipped) {
+		if (midlet.thread.flipped) {
 			sq = Position.SQUARE_FLIP(sq);
 		}
 		drawCursorSquare(g, sq);
+
+
 		if (phase == PHASE_THINKING) {
 			int x, y;
-			if (midlet.flipped) {
+			if (midlet.thread.flipped) {
 				x = (Position.FILE_X(sqDst) < 8 ? left : right);
 				y = (Position.RANK_Y(sqDst) < 4 ? top : bottom);
 			} else {
 				x = (Position.FILE_X(sqDst) < 8 ? right: left);
 				y = (Position.RANK_Y(sqDst) < 4 ? bottom: top);
 			}
-			g.drawImage(imgThinking, x, y, Graphics.LEFT + Graphics.TOP);
 		} else if (phase == PHASE_EXITTING) {
 			g.setFont(fontLarge);
 			g.setColor(0xff0000);
 			g.drawString(message, width / 2, height / 2, Graphics.HCENTER + Graphics.BASELINE);
-		}
-
-		if (bNoKeyPad) {
-			g.setFont(fontSmall);
-			g.setColor(0x0000ff);
-			g.drawString("* - Back", 0, height, Graphics.LEFT + Graphics.BASELINE);
-			g.drawString("0 - Retract", width / 2, height, Graphics.HCENTER + Graphics.BASELINE);
-			g.drawString("# - About", width, height, Graphics.RIGHT + Graphics.BASELINE);
-		}
+		}		
 	}
 
 	protected void keyPressed(int code) {
 		if (phase == PHASE_EXITTING) {
-			midlet.startMusic("form");
 			Display.getDisplay(midlet).setCurrent(midlet.form);
 			return;
 		}
 		if (phase == PHASE_THINKING) {
 			return;
-		}
-
-		if (bNoKeyPad) {
-			switch (code) {
-			case KEY_STAR:
-				back();
-				return;
-			case KEY_NUM0:
-				retract();
-				return;
-			case KEY_POUND:
-				about();
-				return;
-			}
 		}
 
 		int deltaX = 0, deltaY = 0;
@@ -423,26 +367,13 @@ class ChessCanvas extends Canvas {
 
 	protected void pointerPressed(int x, int y) {
 		if (phase == PHASE_EXITTING) {
-			midlet.startMusic("form");
 			Display.getDisplay(midlet).setCurrent(midlet.form);
 			return;
 		}
 		if (phase == PHASE_THINKING) {
 			return;
 		}
-		if (bNoKeyPad && height - y < fontSmall.getHeight()) {
-			switch (x * 3 / width) {
-			case 0:
-				back();
-				return;
-			case 1:
-				retract();
-				return;
-			case 2:
-				about();
-				return;
-			}
-		}
+		
 		cursorX = Util.MIN_MAX(0, (x - left) / squareSize, 7);
 		cursorY = Util.MIN_MAX(0, (y - top) / squareSize, 7);
 		clickSquare();
@@ -452,58 +383,82 @@ class ChessCanvas extends Canvas {
 
 	private void clickSquare() {
 		int sq = Position.COORD_XY(cursorX + Position.FILE_LEFT, cursorY + Position.RANK_TOP);
-		if (midlet.flipped) {
+		if (midlet.thread.flipped) {
 			sq = Position.SQUARE_FLIP(sq);
 		}
 		int pc = pos.squares[sq];
 		if ((pc & Position.SIDE_TAG(pos.sdPlayer)) != 0) {
-			midlet.playSound(RESP_CLICK);
+			midlet.ac.playSound(RESP_CLICK);
 			mvLast = 0;
 			sqSelected = sq;
 		} else {
 			if (sqSelected > 0 && addMove(Position.MOVE(sqSelected, sq)) && !responseMove()) {
-				midlet.rsData[0] = 0;
+				midlet.thread.rsData[0] = 0;
 				phase = PHASE_EXITTING;
 			}
 		}
 	}
 
-	private void drawSquare(Graphics g, Image image, int sq) {
-		int sqFlipped = (midlet.flipped ? Position.SQUARE_FLIP(sq) : sq);
+	private void drawPieceSquare(Graphics g, Image image, int sq) {
+		int sqFlipped = (midlet.thread.flipped ? Position.SQUARE_FLIP(sq) : sq);
 		int sqX = left + (Position.FILE_X(sqFlipped) - Position.FILE_LEFT) * squareSize;
 		int sqY = top + (Position.RANK_Y(sqFlipped) - Position.RANK_TOP) * squareSize;
 		g.drawImage(image, sqX, sqY, Graphics.LEFT + Graphics.TOP);
 	}
         
-        private void drawVoidSquare(Graphics g, int sq) {
-		int sqFlipped   = (midlet.flipped ? Position.SQUARE_FLIP(sq) : sq);
-                int sqFlippedX  = Position.FILE_X(sqFlipped);
-                int sqFlippedY  = Position.RANK_Y(sqFlipped);
+    private void drawVoidSquare(Graphics g, int sq) {
+		int sqFlipped   = (midlet.thread.flipped ? Position.SQUARE_FLIP(sq) : sq);
+		int sqFlippedX  = Position.FILE_X(sqFlipped);
+		int sqFlippedY  = Position.RANK_Y(sqFlipped);
 
 		int sqX = left + (sqFlippedX - Position.FILE_LEFT) * squareSize;
 		int sqY = top + (sqFlippedY - Position.RANK_TOP) * squareSize;
 		
-                if ((sqFlippedX+sqFlippedY)%2==0) {
-                    g.setColor(0x4D6D92);
-                } else {
-                    g.setColor(0xECECD7);
-                }
-                g.fillRect(sqX, sqY, squareSize, squareSize);
+		if ((sqFlippedX+sqFlippedY)%2!=0) {
+			g.setColor(0x4D6D92);
+		} else {
+			g.setColor(0xECECD7);
+		}
+		g.fillRect(sqX, sqY, squareSize, squareSize);
 	}
         
-        private void drawCursorSquare(Graphics g, int sq) {
-		int sqFlipped   = (midlet.flipped ? Position.SQUARE_FLIP(sq) : sq);
-                int sqFlippedX  = Position.FILE_X(sqFlipped);
-                int sqFlippedY  = Position.RANK_Y(sqFlipped);
+    private void drawCursorSquare(Graphics g, int sq) {
+		int sqFlipped   = (midlet.thread.flipped ? Position.SQUARE_FLIP(sq) : sq);
+        int sqFlippedX  = Position.FILE_X(sqFlipped);
+        int sqFlippedY  = Position.RANK_Y(sqFlipped);
 
 		int sqX = left + (sqFlippedX - Position.FILE_LEFT) * squareSize;
 		int sqY = top + (sqFlippedY - Position.RANK_TOP) * squareSize;
 
-                g.setColor(0x333333);
-                g.drawRect(sqX, sqY, squareSize-1, squareSize-1);
-                g.drawRect(sqX+1, sqY+1, squareSize-3, squareSize-3);
+		g.setColor(0x333333);
+		g.drawRect(sqX, sqY, squareSize-1, squareSize-1);
+		g.drawRect(sqX+1, sqY+1, squareSize-3, squareSize-3);
+		g.drawRect(sqX+2, sqY+2, squareSize-5, squareSize-5);
 	}
 
+	private void drawSrcSquare(Graphics g, int sq) {
+		int sqFlipped   = (midlet.thread.flipped ? Position.SQUARE_FLIP(sq) : sq);
+        int sqFlippedX  = Position.FILE_X(sqFlipped);
+        int sqFlippedY  = Position.RANK_Y(sqFlipped);
+
+		int sqX = left + (sqFlippedX - Position.FILE_LEFT) * squareSize;
+		int sqY = top + (sqFlippedY - Position.RANK_TOP) * squareSize;
+
+		g.setColor(0x99ff99);
+		g.fillRect(sqX, sqY, squareSize, squareSize);
+	}
+
+	private void drawDstSquare(Graphics g, int sq) {
+		int sqFlipped   = (midlet.thread.flipped ? Position.SQUARE_FLIP(sq) : sq);
+        int sqFlippedX  = Position.FILE_X(sqFlipped);
+        int sqFlippedY  = Position.RANK_Y(sqFlipped);
+
+		int sqX = left + (sqFlippedX - Position.FILE_LEFT) * squareSize;
+		int sqY = top + (sqFlippedY - Position.RANK_TOP) * squareSize;
+
+		g.setColor(0x66ff33);
+		g.fillRect(sqX, sqY, squareSize, squareSize);
+	}
 
 	/** Player Move Result */
 	private boolean getResult() {
@@ -514,33 +469,33 @@ class ChessCanvas extends Canvas {
 	private boolean getResult(int response) {
 		if (pos.isMate()) {
 			if (pos.inCheck()) {
-				midlet.playSound(response < 0 ? RESP_WIN : RESP_LOSS);
+				midlet.ac.playSound(response < 0 ? RESP_WIN : RESP_LOSS);
 				message = (response < 0 ? "You Win!" : "You Lose!");
 			} else {
-				midlet.playSound(RESP_DRAW);
+				midlet.ac.playSound(RESP_DRAW);
 				message = "Draw by Stalemate!";
 			}
 			return true;
 		}
 		if (pos.isRep(2)) {
-			midlet.playSound(RESP_DRAW);
+			midlet.ac.playSound(RESP_DRAW);
 			message = "Draw by Repetition!";
 			return true;
 		}
 		if (pos.moveNum > 100) {
-			midlet.playSound(RESP_DRAW);
+			midlet.ac.playSound(RESP_DRAW);
 			message = "Draw by 50-Move Rule!";
 			return true;
 		}
 		if (response >= 0) {
-			midlet.playSound(response);
+			midlet.ac.playSound(response);
 			// Backup Retract Status
-			System.arraycopy(midlet.rsData, 0, retractData, 0, ChessMIDlet.RS_DATA_LEN);
+			System.arraycopy(midlet.thread.rsData, 0, retractData, 0, ChessThread.RS_DATA_LEN);
 			// Backup Record-Score Data
-			midlet.rsData[0] = 1;
-			System.arraycopy(pos.squares, 0, midlet.rsData, 256, 128);
-			midlet.rsData[384] = (byte) pos.castlingBits();
-			midlet.rsData[385] = (byte) pos.enPassantSquare();
+			midlet.thread.rsData[0] = 1;
+			System.arraycopy(pos.squares, 0, midlet.thread.rsData, 256, 128);
+			midlet.thread.rsData[384] = (byte) pos.castlingBits();
+			midlet.thread.rsData[385] = (byte) pos.enPassantSquare();
 		}
 		return false;
 	}
@@ -549,7 +504,7 @@ class ChessCanvas extends Canvas {
 		if (pos.legalMove(mv)) {
 			int pcSrc = pos.squares[Position.SRC(mv)];
 			if (pos.makeMove(mv)) {
-				midlet.playSound(pos.inCheck() ? RESP_CHECK : pos.specialMove() ?
+				midlet.ac.playSound(pos.inCheck() ? RESP_CHECK : pos.specialMove() ?
 						RESP_SPECIAL : pos.captured() ? RESP_CAPTURE : RESP_MOVE);
 				if (pos.captured() || Position.PIECE_TYPE(pcSrc) == Position.PIECE_PAWN) {
 					pos.setIrrev();
@@ -558,7 +513,7 @@ class ChessCanvas extends Canvas {
 				mvLast = mv;
 				return true;
 			}
-			midlet.playSound(RESP_ILLEGAL);
+			midlet.ac.playSound(RESP_ILLEGAL);
 		}
 		return false;
 	}
@@ -570,7 +525,7 @@ class ChessCanvas extends Canvas {
 		phase = PHASE_THINKING;
 		repaint();
 		serviceRepaints();
-		mvLast = search.searchMain(1000 << (midlet.level << 1));
+		mvLast = search.searchMain(1000 << (midlet.thread.level << 1));
 		int pc = pos.squares[Position.SRC(mvLast)];
 		pos.makeMove(mvLast);
 		int response = pos.inCheck() ? RESP_CHECK2 : pos.specialMove() ?
@@ -588,15 +543,14 @@ class ChessCanvas extends Canvas {
 		if (phase == PHASE_WAITING) {
 			Display.getDisplay(midlet).setCurrent(altBack);
 		} else {
-			midlet.rsData[0] = 0;
-			midlet.startMusic("form");
+			midlet.thread.rsData[0] = 0;
 			Display.getDisplay(midlet).setCurrent(midlet.form);
 		}
 	}
 
 	void retract() {
 		// Restore Retract Status
-		System.arraycopy(retractData, 0, midlet.rsData, 0, ChessMIDlet.RS_DATA_LEN);
+		System.arraycopy(retractData, 0, midlet.thread.rsData, 0, ChessThread.RS_DATA_LEN);
 		load();
 		repaint();
 		serviceRepaints();
