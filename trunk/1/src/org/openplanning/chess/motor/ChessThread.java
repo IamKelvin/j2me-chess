@@ -34,8 +34,9 @@ public class ChessThread {
 	public boolean  flipped;
 	public int		level, sound;
 
-	public Position	pos		= new Position();
-	public Search	search	= new Search(pos, 12);
+	public Position	pos			= new Position();
+	public Position	pos_showed	= new Position();
+	public Search	search		= new Search(pos, 12);
 
 	public Motor	motor;
 
@@ -62,7 +63,7 @@ public class ChessThread {
 	public FranzChessMIDlet midlet;
 
 	public String getPlayer() {
-		return PLAYER_COLOR[pos.sdPlayer]+"("+PLAYER[white]+":"+PLAYER[black]+")";
+		return PLAYER_COLOR[pos_showed.sdPlayer]+"("+PLAYER[white]+":"+PLAYER[black]+")";
 	}
 
 	public ChessThread (FranzChessMIDlet midlet_) {
@@ -133,7 +134,8 @@ public class ChessThread {
 		if (midlet.thread.rsData[0] == 0) {
 			// pos.fromFen(Position.STARTUP_FEN[midlet.handicap]);
 			midlet.thread.pos.fromFen(midlet.mainform.txtFen.getString());
-			
+			midlet.thread.pos_showed.fromFen(midlet.mainform.txtFen.getString());
+
 		} else {
 			
 			// Restore Record-Score Data
@@ -142,12 +144,15 @@ public class ChessThread {
 				int pc = midlet.thread.rsData[sq + 256];
 				if (pc > 0) {
 					midlet.thread.pos.addPiece(sq, pc);
+					midlet.thread.pos_showed.addPiece(sq, pc);
 				}
 			}
 			if (midlet.thread.flipped) {
 				midlet.thread.pos.changeSide();
+				midlet.thread.pos_showed.changeSide();
 			}
 			midlet.thread.pos.setIrrev(midlet.thread.rsData[384], midlet.thread.rsData[385] & 255);
+			midlet.thread.pos_showed.setIrrev(midlet.thread.rsData[384], midlet.thread.rsData[385] & 255);
 		}
 
 		// Backup Retract Status

@@ -14,7 +14,9 @@ import javax.microedition.lcdui.*;
 public class ChessDrawer {
 	private ChessCanvas canvas;
 
-	private static Font fontInfo = Font.getFont(
+	private static Font fontInfo = Font.getFont(Font.FACE_PROPORTIONAL,Font.STYLE_PLAIN,Font.SIZE_SMALL);
+
+	private static Font fontInfo2 = Font.getFont(
 		Font.FACE_MONOSPACE,
 		Font.STYLE_PLAIN,
 		Font.SIZE_SMALL
@@ -119,7 +121,7 @@ public class ChessDrawer {
 		// Piece in board
         for (int sq = 0; sq < 128; sq ++) {
 			if (Position.IN_BOARD(sq)) {
-				int pc = canvas.midlet.thread.pos.squares[sq];
+				int pc = canvas.midlet.thread.pos_showed.squares[sq];
 				if (pc > 0) {
 					drawPieceSquare(g, canvas.layout.imgPieces[pc], sq);
 				}
@@ -139,7 +141,7 @@ public class ChessDrawer {
 	public void drawInfo(Graphics g) {
 		g.setFont(fontInfo);
 
-		String statusbar = "() - "+String.valueOf(canvas.theKeyPressed);
+		String statusbar = String.valueOf(canvas.pressed_key);
 		g.drawString(
 			statusbar,
 			canvas.fullscreenWidth,

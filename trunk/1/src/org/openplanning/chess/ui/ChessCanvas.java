@@ -27,23 +27,18 @@ public class ChessCanvas extends Canvas {
 	private static final int PHASE_USERTURN	= 4;
 	private static final int PHASE_EDITING	= 5;
 	private static final int PHASE_ANALIZE	= 6;
-	private static final String[] PHASE_STRING = {"LOADING","WAITING","THINKING","EXITING","USERTURN","EDITING","ANALIZE"};
 
-	private static final int RESP_CLICK		= 0;
-	private static final int RESP_ILLEGAL	= 1;
-	private static final int RESP_MOVE		= 2;
-	private static final int RESP_MOVE2		= 3;
-	private static final int RESP_CAPTURE	= 4;
-	private static final int RESP_CAPTURE2	= 5;
-	private static final int RESP_SPECIAL	= 6;
-	private static final int RESP_SPECIAL2	= 7;
-	private static final int RESP_CHECK		= 8;
-	private static final int RESP_CHECK2	= 9;
-	private static final int RESP_WIN		= 10;
-	private static final int RESP_DRAW		= 11;
-	private static final int RESP_LOSS		= 12;
+	private static final String[] PHASE_STRING = {
+		"LOADING",
+		"WAITING",
+		"THINKING",
+		"EXITING",
+		"USERTURN",
+		"EDITING",
+		"ANALIZE"
+	};
 
-	int theKeyPressed;
+	int pressed_key;
 
 	public FranzChessMIDlet midlet;
 
@@ -55,6 +50,7 @@ public class ChessCanvas extends Canvas {
 	public int		cursorY		= 0;
 	public int		sqSelected	= 0;
 	public int		mvLast		= 0;
+	public int		animation	= 0;
 
 	public int normalWidth		= getWidth();
 	public int normalHeight		= getHeight();
@@ -170,7 +166,7 @@ public class ChessCanvas extends Canvas {
 			g.setColor(0xff0000);
 			g.drawString(message, width / 2, height / 2, Graphics.HCENTER + Graphics.BASELINE);
 			*/
-		}
+		}		
 	}
 
 
@@ -217,6 +213,7 @@ public class ChessCanvas extends Canvas {
 	}
 	
 	protected void keyPressed(int code) {
+		pressed_key = code;
 		int deltaX = 0, deltaY = 0;
 		int action = getGameAction(code);
 		if (action == FIRE || code == KEY_NUM5) {
@@ -290,7 +287,7 @@ public class ChessCanvas extends Canvas {
 		if (false) {
 		} else if (phase == PHASE_USERTURN) {
 			if ((pc & Position.SIDE_TAG(midlet.thread.pos.sdPlayer)) != 0) {
-				midlet.ac.playSound(RESP_CLICK);
+				midlet.ac.playSound(0);
 				mvLast = 0;
 				sqSelected = sq;
 			} else {
@@ -357,6 +354,7 @@ public class ChessCanvas extends Canvas {
 	}
 
 	public void sendMove(int mv) {
-
+		phase = PHASE_USERTURN;
+		mvLast = mv;
 	}
 }

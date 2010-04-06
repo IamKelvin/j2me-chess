@@ -26,6 +26,9 @@ public class Motor implements Runnable {
 	private ChessThread thread;
     private boolean quit = false;
 
+	private int mvLoop;
+	private int stump = 0;
+
 	private Vector queue = new Vector();
 
 	public Motor(ChessThread thread_) {
@@ -34,7 +37,6 @@ public class Motor implements Runnable {
 	}
 
     public void run(){
-		System.out.println("Stara");
 		Object o;
 
 		while( !quit ){
@@ -57,8 +59,21 @@ public class Motor implements Runnable {
 
 			synchronized( thread ){
 				if( thread.now(thread.PLAYER_MOTOR) ){
-					//thread.midlet.debugApp("FranzTurn");
-					thread.midlet.canvas.sendMove(0);
+					if (stump == 0) {
+						new Thread() {
+							public void run() {
+								try {
+									mvLoop = responseMove();
+									thread.pos_showed.makeMove(mvLoop);
+									thread.midlet.canvas.sendMove(mvLoop);
+									stump = 0;
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+						}.start();
+						stump = 1;
+					}					
 				} else {
 					/*
 					try {
@@ -134,6 +149,7 @@ public class Motor implements Runnable {
 			return true;
 		}
 		if (response >= 0) {			
+			/*
 			// Backup Retract Status
 			System.arraycopy(thread.rsData, 0, thread.retractData, 0, ChessThread.RS_DATA_LEN);
 			// Backup Record-Score Data
@@ -141,12 +157,16 @@ public class Motor implements Runnable {
 			System.arraycopy(thread.pos.squares, 0, thread.rsData, 256, 128);
 			thread.rsData[384] = (byte) thread.pos.castlingBits();
 			thread.rsData[385] = (byte) thread.pos.enPassantSquare();
+			*/
 		}
 		return false;
 	}
 
 	public void sendMove(int mv) {
 		doMove(mv);
+		if (isvalid) {
+			thread.pos_showed.makeMove(mv);
+		}
 	}
 
 	private void doMove(int mv) {
@@ -165,27 +185,19 @@ public class Motor implements Runnable {
 		isvalid = false;
 		return;
 	}
-	boolean responseMove() {
-		/*
+	int responseMove() {
 		if (getResult()) {
-			return false;
+			return 0;
 		}
-		phase = PHASE_THINKING;
-		repaint();
-		serviceRepaints();
-		mvLast = thread.search.searchMain(1000 << (thread.level << 1));
-		int pc = thread.pos.squares[Position.SRC(mvLast)];
-		thread.pos.makeMove(mvLast);
-		int response = thread.pos.inCheck() ? RESP_CHECK2 : thread.pos.specialMove() ?
-				RESP_SPECIAL2 : thread.pos.captured() ? RESP_CAPTURE2 : RESP_MOVE2;
+		int mv = thread.search.searchMain(1000 << (thread.level << 1));
+		int pc = thread.pos.squares[Position.SRC(mv)];
+		thread.pos.makeMove(mv);
+		//int response = thread.pos.inCheck() ? RESP_CHECK2 : thread.pos.specialMove() ?
+		//		RESP_SPECIAL2 : thread.pos.captured() ? RESP_CAPTURE2 : RESP_MOVE2;
 		if (thread.pos.captured() || Position.PIECE_TYPE(pc) == Position.PIECE_PAWN) {
 			thread.pos.setIrrev();
 		}
-		phase = PHASE_WAITING;
-		repaint();
-		serviceRepaints();*/
-		//return !getResult(response);
-		return false;
+		return mv;
 	}
 
 }

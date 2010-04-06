@@ -19,6 +19,7 @@ import javax.microedition.lcdui.ItemStateListener;
 
 import org.openplanning.chess.FranzChessMIDlet;
 import org.openplanning.chess.motor.Position;
+
 /**
  *
  * @author root
@@ -26,12 +27,15 @@ import org.openplanning.chess.motor.Position;
 public class MainForm extends Form {
 	public FranzChessMIDlet midlet;
 
-	Command cmdStart	= new Command("Start", Command.OK, 1);
-	Command cmdExit		= new Command("Exit", Command.BACK, 1);
+	Command cmdStart	= new Command("Start",		Command.ITEM,	10);
+	Command cmdLoad		= new Command("Load",		Command.ITEM,	20);
+	Command cmdSettings	= new Command("Settings",	Command.ITEM,	30);
+	Command cmdAbout	= new Command("About",		Command.ITEM,	40);
+	Command cmdExit		= new Command("Exit",		Command.ITEM,	50);
 
 	ChoiceGroup cgGameType = new ChoiceGroup(
 		"New",
-		Choice.EXCLUSIVE,
+		Choice.POPUP,
 		new String[] {
 			"Human vs. FranzChess",
 			"FranzChess vs. Human",
@@ -41,7 +45,7 @@ public class MainForm extends Form {
 
 	ChoiceGroup cgGameRule = new ChoiceGroup(
 		"Option",
-		Choice.EXCLUSIVE,
+		Choice.POPUP,
 		new String[] {
 			"Blitz 5 min.",
 			"Blitz 10 min.",
@@ -63,7 +67,7 @@ public class MainForm extends Form {
 	//form.append(txtFen);
 
 	public MainForm(FranzChessMIDlet midlet_) {
-		super("FranzChess 0.1.2\nClearlook and Mobile Chess Apps");
+		super("FranzChess 0.1.2\nClearlook Chess Apps on Mobile");
 
 		midlet = midlet_;
 
@@ -71,13 +75,15 @@ public class MainForm extends Form {
 		this.append(cgGameRule);
 		this.append(okButton);
 
-		this.append(cgToMove);
+		//this.append(cgToMove);
 
-
-		this.append(cgLevel);
-		this.append(gSound);
+		//this.append(cgLevel);
+		//this.append(gSound);
 
 		this.addCommand(cmdStart);
+		this.addCommand(cmdLoad);
+		this.addCommand(cmdSettings);
+		this.addCommand(cmdAbout);
 		this.addCommand(cmdExit);
 
 		this.setCommandListener(new CommandListener() {
