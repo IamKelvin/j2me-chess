@@ -10,7 +10,7 @@ import javax.microedition.lcdui.*;
 /**
  * @author cicciodarkast
  */
-public class HelloMIDlet extends MIDlet implements CommandListener {
+public class ChessMIDlet extends MIDlet implements CommandListener {
     
     private boolean midletPaused = false;
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
@@ -22,7 +22,7 @@ public class HelloMIDlet extends MIDlet implements CommandListener {
     /**
      * The HelloMIDlet constructor.
      */
-    public HelloMIDlet() {
+    public ChessMIDlet() {
     }
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Methods ">//GEN-BEGIN:|methods|0|
