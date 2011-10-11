@@ -12,8 +12,19 @@ public class Engine {
     private Node start_node;
     private Node brain_node;
     
-    public void doMove(Move m) {
+    public Engine() {
+        start_node = new Node();
     }
+    
+    public Moves getMoves() {
+        Moves moves = new Moves();
+        return moves;
+    }
+    
+    public void doMove(Move m) {
+    
+    }
+    
     public void unMove() {   
     }
     
