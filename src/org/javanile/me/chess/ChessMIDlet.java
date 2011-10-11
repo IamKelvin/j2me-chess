@@ -12,6 +12,8 @@ import javax.microedition.lcdui.*;
  */
 public class ChessMIDlet extends MIDlet implements CommandListener {
     
+    private Game g;
+    
     private boolean midletPaused = false;
     //<editor-fold defaultstate="collapsed" desc=" Generated Fields ">//GEN-BEGIN:|fields|0|
     private Command exitCommand;
@@ -23,6 +25,7 @@ public class ChessMIDlet extends MIDlet implements CommandListener {
      * The HelloMIDlet constructor.
      */
     public ChessMIDlet() {
+        g = new Game();
     }
 
     //<editor-fold defaultstate="collapsed" desc=" Generated Methods ">//GEN-BEGIN:|methods|0|
