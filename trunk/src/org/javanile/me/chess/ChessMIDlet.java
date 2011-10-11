@@ -176,6 +176,7 @@ return stringItem;
         Move m = new Move("a7h1");
         
         n.doMove(m);
+        Engine e = new Engine();
         
         System.out.println(n.toString());
         
