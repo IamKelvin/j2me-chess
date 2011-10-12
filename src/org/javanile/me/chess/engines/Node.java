@@ -10,6 +10,7 @@ package org.javanile.me.chess.engines;
  */
 public class Node {
     private char[][] board;
+    private int turn = 0;
     public Node() {      
         this(Constants.START_POSITION);
     }
@@ -29,13 +30,23 @@ public class Node {
     
     }
     
-    private void setBoard(Square s,char p) {
+    public void setBoard(Square s,char p) {
         board[s.getRank()+2][s.getFile()+2] = p;        
     }
-    private char getBoard(Square s) {
+    public char getBoard(Square s) {
         return board[s.getRank()+2][s.getFile()+2];        
     }
+    public char getBoard(int r, int f) {
+        return board[r+2][f+2];        
+    }
 
+    public boolean isWhiteTurn() {
+        return turn==1;
+    }
+    public boolean isBlackTurn() {
+        return turn==-1;
+    }
+    
     private void parse_fen(String fen) {
         board = new char[12][12];
         
@@ -64,9 +75,12 @@ public class Node {
                 } else {
                     s++;
                 }
+            } else if (s==1) {
+                turn = 1;
             }
             i++;
         }
+        
     }
     
     public String toString() {
