@@ -171,14 +171,16 @@ return stringItem;
      */
     public void startApp() {
         g = new Game();
-        Node n = new Node();
         
-        Move m = new Move("a7h1");
-        
-        n.doMove(m);
         Engine e = new Engine();
         
-        System.out.println(n.toString());
+        e.doMove("e2e4");
+        e.doMove("e7e5");        
+        
+        Moves m = e.getMoves();
+        
+        System.out.println(e.toString());
+        System.out.println(m.toString());
         
         if (midletPaused) {
             resumeMIDlet();
