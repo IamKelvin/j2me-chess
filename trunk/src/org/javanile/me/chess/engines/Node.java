@@ -11,11 +11,26 @@ package org.javanile.me.chess.engines;
 public class Node {
     private char[][] board;
     private int turn = 0;
+    
     public Node() {      
         this(Constants.START_POSITION);
     }
     public Node(String fen) {
         parse_fen(fen);
+    }
+    public void set(Node node) {
+        try {
+            turn = node.getTurn();
+            char[][] temp = node.getBoard();
+            for(int r=0;r<12;r++) {
+                for(int c=0;c<12;c++) {
+                    board[r][c] = temp[r][c];
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     public void doMove(Move m) {
@@ -45,6 +60,24 @@ public class Node {
     }
     public boolean isBlackTurn() {
         return turn==-1;
+    }
+    public int getTurn() {
+        return turn;
+    }
+    public char[][] getBoard() {        
+        return board;
+    }
+            
+    public boolean isFreeOrOpponentSquare(Square s) {
+        char p = getBoard(s);
+        if (turn == -1) {
+            if (p>96) {
+                return true;
+            } 
+        } else {
+        
+        }
+        return (p=='.');
     }
     
     private void parse_fen(String fen) {

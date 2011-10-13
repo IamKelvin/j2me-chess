@@ -17,6 +17,18 @@ public class Moves {
     public void add(char p,Square from, Square to) {
         moves.addElement(new Move(p, from, to));
     }
+    public Move at(int index) {
+        return (Move)moves.elementAt(index);
+    }
+    public int size() {
+        return moves.size();
+    }
+    public void move(Move move) {
+        moves.addElement(move);
+    }
+    public void undo() {
+        moves.removeElementAt(moves.size()-1);
+    }
     public String toString() {
         String output = "";
         for(int i=0;i<moves.size();i++) {

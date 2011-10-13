@@ -177,10 +177,15 @@ return stringItem;
         e.doMove("e2e4");
         e.doMove("e7e5");        
         
+        e.analize();
+        
+        /*
         Moves m = e.getMoves();
         
         System.out.println(e.toString());
         System.out.println(m.toString());
+        */
+        
         
         if (midletPaused) {
             resumeMIDlet();
