@@ -29,6 +29,9 @@ public class Square {
     public Square shift(int dr,int dc) {
         return new Square(rank+dr,file+dc);
     }
+    public Square shift(int[] d) {
+        return new Square(rank+d[0],file+d[1]);
+    }
     public String toString() {
         return ""+((char)(file+97))+((char)(56-rank));
     }
