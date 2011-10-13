@@ -47,20 +47,20 @@ public class Constants {
     public static final int     MK_SIMPLE = 10000 + 1;
  
     public static final int[][] _DELTA = {
-        /*MK_WPS:*/ {2,0},
-        /*MK_WPD:*/ {1,0},
-        /*MK_WPC1:*/{1,1},
-        /*MK_WPC2:*/{1,-1},        
-        /*MK_BPS:*/ {-2,0},
-        /*MK_BPD:*/ {-1,0},
-        /*MK_BPC1:*/{-1,-1},
-        /*MK_BPC2:*/{-1,1},
-        /*MK_LNN:*/ {1,0},
-        /*MK_LNE:*/ {1,1},
-        /*MK_LNW:*/ {1,-1},
-        /*MK_LSS:*/ {-1,0},
-        /*MK_LSE:*/ {-1,1},
-        /*MK_LSW:*/ {-1,-1},
+        /*MK_WPS:*/ {-2,0},
+        /*MK_WPD:*/ {-1,0},
+        /*MK_WPC1:*/{-1,1},
+        /*MK_WPC2:*/{-1,-1},        
+        /*MK_BPS:*/ {2,0},
+        /*MK_BPD:*/ {1,0},
+        /*MK_BPC1:*/{1,-1},
+        /*MK_BPC2:*/{1,1},
+        /*MK_LNN:*/ {-1,0},
+        /*MK_LNE:*/ {-1,1},
+        /*MK_LNW:*/ {-1,-1},
+        /*MK_LSS:*/ {1,0},
+        /*MK_LSE:*/ {1,1},
+        /*MK_LSW:*/ {1,-1},
         /*MK_LEE:*/ {0,1},
         /*MK_LWW:*/ {0,-1}    
     };
@@ -79,6 +79,22 @@ public class Constants {
         /*P_BR*/    {MK_LNN,MK_LWW,MK_LEE,MK_LSS},
         /*P_BQ*/    {MK_LNN,MK_LWW,MK_LEE,MK_LSS,MK_LNE,MK_LNW,MK_LSE,MK_LSW},
         /*P_BK*/    {}        
+    };
+    
+    public static final int[] _VALUE = {
+        /*P_NONE*/  0,
+        /*P_WP*/    100,
+        /*P_WN*/    290,
+        /*P_WB*/    300,
+        /*P_WR*/    500,
+        /*P_WQ*/    900,
+        /*P_WK*/    100000,
+        /*P_BP*/   -100,
+        /*P_BN*/   -290,
+        /*P_BB*/   -300,
+        /*P_BR*/   -500,
+        /*P_BQ*/   -900,
+        /*P_BK*/   -100000
     };
     
     public static final int[]   RULE = {};
@@ -117,5 +133,23 @@ public class Constants {
             case 'K':return _GAMMA[P_WK];               
         }
         return null;
+    }
+    
+    public static int VALUE(char p) {
+        switch(p) {
+            case 'p':return _VALUE[P_BP];         
+            case 'n':return _VALUE[P_BN];         
+            case 'b':return _VALUE[P_BB];         
+            case 'r':return _VALUE[P_BR];         
+            case 'q':return _VALUE[P_BQ];         
+            case 'k':return _VALUE[P_BK];         
+            case 'P':return _VALUE[P_WP];         
+            case 'N':return _VALUE[P_WN];         
+            case 'B':return _VALUE[P_WB];         
+            case 'R':return _VALUE[P_WR];         
+            case 'Q':return _VALUE[P_WQ];         
+            case 'K':return _VALUE[P_WK];               
+        }
+        return 0;
     }
 }
