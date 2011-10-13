@@ -28,20 +28,29 @@ public class Engine {
                 char p = node.getBoard(r,c);
                 if (node.isBlackTurn()) {
                     if (p=='p') {
+                        if (r==1) { moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPD))); }
                         moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPS)));
-                        moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPD)));
                         moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPC1)));
                         moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPC2)));
-                    } else if (p=='b') {
-                    
+                    } else if ((p=='b')||(p=='r')||(p=='q')) {
+                        int[] l = Constants.GAMMA(p);
+                        for(int i=0;i<l.length;i++) {
+                            Square to = from.shift(Constants.DELTA(p,l[i]));
+                            while(node.isFreeOrOpponentSquare(to)) {
+                                moves.add(p, from, to);
+                                to = to.shift(Constants.DELTA(p,l[i]));
+                            }
+                        }                                        
                     }
                 }
                 if (node.isWhiteTurn()) {
                     if (p=='P') {
-                        moves.add(p,from,from.shift(-2, 0));
-                        moves.add(p,from,from.shift(-1, 0));
-                        moves.add(p,from,from.shift(-1, 1));
-                        moves.add(p,from,from.shift(-1,-1));                
+                        if (r==6) {
+                            moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPD)));
+                        }
+                        moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPS)));
+                        moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPC1)));
+                        moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPC2)));                
                     } else if ((p=='B')||(p=='R')||(p=='Q')) {
                         int[] l = Constants.GAMMA(p);
                         for(int i=0;i<l.length;i++) {
@@ -90,12 +99,7 @@ public class Engine {
             for(int c=0;c<8;c++) {
                 Square from = new Square(r,c);        
                 char p = node.getBoard(r,c);
-                if (p=='p') {
-                    val-=1;
-                } 
-                if (p=='P') {
-                    val+=1;
-                }                 
+                val += Constants.VALUE(p);
             }
         }
         return val;
@@ -119,27 +123,30 @@ public class Engine {
                 count=0;
                 System.out.println("START!");                   
                 brain_node.set(start_node);
-                analize_loop(-9999);
+                analize_loop(-9999,20);
+                System.out.println(brain_node.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        private void analize_loop(int best) {            
+        private void analize_loop(int best,int deep) {            
             count++;
-            System.out.println(count+") "+best+" "+line.toString());                
-            if (count<1000) {            
-                Moves m = brain_getMoves();
-                for(int i=0;i<m.size();i++) {
-                    brain_doMove(m.at(i));             
-                    line.move(m.at(i));
-                    int val = brain_getValue();
-                    if (val>=best) {
-                        analize_loop(val);
-                    }
-                    line.undo();
-                    brain_unMove(m.at(i));
-                }                
-            }            
+            System.out.println(count+". ("+deep+") "+best+" "+line.toString());                
+            if (count<1000) {
+                if (deep>0) {            
+                    Moves m = brain_getMoves();
+                    for(int i=0;i<m.size();i++) {
+                        brain_doMove(m.at(i));             
+                        line.move(m.at(i));
+                        int val = brain_getValue();
+                        if (val>=best) {
+                            analize_loop(val,deep-1);
+                        }
+                        line.undo();
+                        brain_unMove(m.at(i));
+                    }                
+                }
+            }    
         }
     }
     

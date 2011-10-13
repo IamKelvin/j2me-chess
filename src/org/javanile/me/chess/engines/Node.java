@@ -36,10 +36,12 @@ public class Node {
     public void doMove(Move m) {
         switch(m.getKind()) {
             case Constants.MK_SIMPLE:
+            default:
                 setBoard(m.getTo(),getBoard(m.getFrom()));
                 setBoard(m.getFrom(),'.');
                 break;
         }
+        changeTurn();        
     }
     public void unMove(Move m) {
     
@@ -60,6 +62,9 @@ public class Node {
     }
     public boolean isBlackTurn() {
         return turn==-1;
+    }
+    private void changeTurn() {
+        turn = -turn;
     }
     public int getTurn() {
         return turn;
