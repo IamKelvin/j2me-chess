@@ -10,6 +10,7 @@ package org.javanile.me.chess.engines;
  */
 public class Move {
     private char piece;
+    private char captured;
     private int kind;
     private Square from;
     private Square to;
@@ -25,6 +26,21 @@ public class Move {
         to = t;
         kind = 0;
     }
+    public Move(char p, Square f, Square t,char c,int k) {
+        piece = p;
+        from = f;
+        to = t;
+        captured = c;
+        kind = k;
+    }
+    public Move(char p, Square f, Square t,char c) {
+        piece = p;
+        from = f;
+        to = t;
+        captured = c;
+        kind = 0;
+    }
+    
     public int getKind() {
         return kind;
     }
