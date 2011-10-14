@@ -26,9 +26,13 @@ public class Engine {
             for(int c=0;c<8;c++) {
                 Square from = new Square(r,c);        
                 char p = node.getBoard(r,c);
+                node.setFocusSquare(from);
+                
                 if (node.isBlackTurn()) {
-                    if (p=='p') {
-                        if (r==1) { moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPD))); }
+                    if (node.isBlackPawn()) {
+                        if (node.isBlackPawnRank()) { 
+                            moves.add(node.getMove(Constants.MK_BPD)); 
+                        }                        
                         moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPS)));
                         moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPC1)));
                         moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPC2)));
@@ -84,7 +88,6 @@ public class Engine {
     }
     public void unMove() {   
     }
-    
     
     private void brain_doMove(Move m) {
         doMove(brain_node,m);

@@ -11,7 +11,8 @@ package org.javanile.me.chess.engines;
 public class Node {
     private char[][] board;
     private int turn = 0;
-    
+    private Square focus_square;
+            
     public Node() {      
         this(Constants.START_POSITION);
     }
@@ -31,6 +32,9 @@ public class Node {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public void setFocusSquare(Square s) {
+        focus_square = s;
     }
     
     public void doMove(Move m) {
@@ -63,6 +67,18 @@ public class Node {
     public boolean isBlackTurn() {
         return turn==-1;
     }
+    public boolean isBlackPawn() {
+        return getBoard(focus_square)=='p';
+    }
+    public boolean isWhitePawn() {
+        return getBoard(focus_square)=='P';
+    }
+    public boolean isBlackPawnRank() {
+        return focus_square.getRank()==1;
+    }
+    public boolean isWhitePawnRank() {
+        return focus_square.getRank()==6;
+    }
     private void changeTurn() {
         turn = -turn;
     }
@@ -72,7 +88,14 @@ public class Node {
     public char[][] getBoard() {        
         return board;
     }
-            
+    public Move getMove(Square from, Square to) {
+        return new Move(getBoard(from),from,to,getBoard(to),Constants.MK_SIMPLE);
+    }
+    public Move getMove(int mk) {
+        Square from = focus_square;
+        Square to = from.shift(Constants.DELTA(getBoard(from), mk));
+        return new Move(getBoard(from),from,to,getBoard(to),mk);
+    }    
     public boolean isFreeOrOpponentSquare(Square s) {
         char p = getBoard(s);
         if (turn == -1) {

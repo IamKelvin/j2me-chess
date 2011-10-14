@@ -17,6 +17,9 @@ public class Moves {
     public void add(char p,Square from, Square to) {
         moves.addElement(new Move(p, from, to));
     }
+    public void add(Move m) {
+        moves.addElement(m);
+    }
     public Move at(int index) {
         return (Move)moves.elementAt(index);
     }
