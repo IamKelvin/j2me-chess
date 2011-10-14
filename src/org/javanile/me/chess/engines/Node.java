@@ -27,8 +27,7 @@ public class Node {
                 for(int c=0;c<12;c++) {
                     board[r][c] = temp[r][c];
                 }
-            }
-            
+            }            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -48,7 +47,14 @@ public class Node {
         changeTurn();        
     }
     public void unMove(Move m) {
-    
+		switch(m.getKind()) {
+            case Constants.MK_SIMPLE:
+            default:
+                setBoard(m.getTo(),m.getCaptured());
+                setBoard(m.getFrom(),m.getPiece());
+                break;
+        }
+        changeTurn();        
     }
     
     public void setBoard(Square s,char p) {
@@ -79,6 +85,13 @@ public class Node {
     public boolean isWhitePawnRank() {
         return focus_square.getRank()==6;
     }
+	public boolean isFileH() {
+		return focus_square.getFile()==7;
+	}
+	public boolean isFileA() {
+		return focus_square.getFile()==0;
+	}
+			
     private void changeTurn() {
         turn = -turn;
     }
@@ -96,18 +109,34 @@ public class Node {
         Square to = from.shift(Constants.DELTA(getBoard(from), mk));
         return new Move(getBoard(from),from,to,getBoard(to),mk);
     }    
+    public Move getMove(Square to, int mk) {
+        Square from = focus_square;
+        return new Move(getBoard(from),from,to,getBoard(to),mk);
+    }    
     public boolean isFreeOrOpponentSquare(Square s) {
         char p = getBoard(s);
         if (turn == -1) {
-            if (p>96) {
-                return true;
-            } 
+			if ((p=='.')||(p=='P')||(p=='N')||(p=='B')||(p=='R')||(p=='Q')||(p=='K')) return true;		    
         } else {
-        
+			if ((p=='.')||(p=='p')||(p=='n')||(p=='b')||(p=='r')||(p=='q')||(p=='k')) return true;		
         }
-        return (p=='.');
+        return false;
     }
-    
+    public boolean haveOpponentPieceIn(Square to) {
+		if (getBoard(to)!='.') {
+			return (getPieceColor(focus_square)!=getPieceColor(to));
+		}
+		return false;
+	}
+	public int getPieceColor(Square s) {
+		char p = getBoard(s);
+		if ((p=='p')||(p=='n')||(p=='b')||(p=='r')||(p=='q')||(p=='k')) return -1;
+		if ((p=='P')||(p=='N')||(p=='B')||(p=='R')||(p=='Q')||(p=='K')) return  1;
+		return 0;
+	}
+	public boolean isFreeSquare(Square s) {
+		return getBoard(s)=='.';
+	}
     private void parse_fen(String fen) {
         board = new char[12][12];
         

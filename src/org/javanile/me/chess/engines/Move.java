@@ -50,6 +50,12 @@ public class Move {
     public Square getTo() {
         return to;
     }       
+	public char getPiece() {
+		return piece;
+	}
+    public char getCaptured() {
+		return captured;
+	}
     public String toString() {
         String output = from.toString()+to.toString();        
         return output;

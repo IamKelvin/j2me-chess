@@ -28,14 +28,51 @@ public class Engine {
                 char p = node.getBoard(r,c);
                 node.setFocusSquare(from);
                 
-                if (node.isBlackTurn()) {
+                if (node.isWhiteTurn()) {
+                    if (node.isWhitePawn()) {
+                        if (node.isWhitePawnRank()) {
+                            moves.add(node.getMove(Constants.MK_WPD));
+                        }
+						if (!node.isFileH()) {
+							Move m = node.getMove(Constants.MK_WPCE);
+							if (node.haveOpponentPieceIn(m.getTo())) {
+								moves.add(m);
+							}
+						}
+						if (!node.isFileA()) {						
+							Move m = node.getMove(Constants.MK_WPCW);
+							if (node.haveOpponentPieceIn(m.getTo())) {
+								moves.add(m);
+							}
+						}
+						Move m = node.getMove(Constants.MK_WPS);
+						if (node.isFreeSquare(m.getTo())) {
+							moves.add(m);
+						}
+                        
+                    } else if ((p=='B')||(p=='R')||(p=='Q')) {
+                        int[] l = Constants.GAMMA(p);
+                        for(int i=0;i<l.length;i++) {
+                            Square to = from.shift(Constants.DELTA(p,l[i]));
+                            while(node.isFreeOrOpponentSquare(to)) {
+                                moves.add(node.getMove(to,l[i]));
+                                to = to.shift(Constants.DELTA(p,l[i]));
+                            }
+                        }                                                
+                    }
+                } else {
                     if (node.isBlackPawn()) {
                         if (node.isBlackPawnRank()) { 
                             moves.add(node.getMove(Constants.MK_BPD)); 
                         }                        
-                        moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPS)));
-                        moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPC1)));
-                        moves.add(p, from, from.shift(Constants.DELTA(p,Constants.MK_BPC2)));
+						if (!node.isFileH()) {
+							moves.add(node.getMove(Constants.MK_BPCE));
+						}
+                        if (!node.isFileA()) {
+							moves.add(node.getMove(Constants.MK_BPCW));
+						}
+						moves.add(node.getMove(Constants.MK_BPS));
+                        
                     } else if ((p=='b')||(p=='r')||(p=='q')) {
                         int[] l = Constants.GAMMA(p);
                         for(int i=0;i<l.length;i++) {
@@ -47,25 +84,7 @@ public class Engine {
                         }                                        
                     }
                 }
-                if (node.isWhiteTurn()) {
-                    if (p=='P') {
-                        if (r==6) {
-                            moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPD)));
-                        }
-                        moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPS)));
-                        moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPC1)));
-                        moves.add(p,from,from.shift(Constants.DELTA(p,Constants.MK_WPC2)));                
-                    } else if ((p=='B')||(p=='R')||(p=='Q')) {
-                        int[] l = Constants.GAMMA(p);
-                        for(int i=0;i<l.length;i++) {
-                            Square to = from.shift(Constants.DELTA(p,l[i]));
-                            while(node.isFreeOrOpponentSquare(to)) {
-                                moves.add(p, from, to);
-                                to = to.shift(Constants.DELTA(p,l[i]));
-                            }
-                        }                                                
-                    }
-                }
+                
             }
         }
         return moves;
@@ -126,7 +145,7 @@ public class Engine {
                 count=0;
                 System.out.println("START!");                   
                 brain_node.set(start_node);
-                analize_loop(-9999,20);
+                analize_loop(-9999,5);
                 System.out.println(brain_node.toString());
             } catch (Exception e) {
                 e.printStackTrace();
@@ -134,7 +153,7 @@ public class Engine {
         }
         private void analize_loop(int best,int deep) {            
             count++;
-            System.out.println(count+". ("+deep+") "+best+" "+line.toString());                
+            System.out.println(count+". ("+deep+") ["+best+"] "+line.toString());      			
             if (count<1000) {
                 if (deep>0) {            
                     Moves m = brain_getMoves();

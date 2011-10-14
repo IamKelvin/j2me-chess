@@ -27,13 +27,13 @@ public class Constants {
         
     public static final int     MK_WPS  = 0;
     public static final int     MK_WPD  = 1;
-    public static final int     MK_WPC1 = 2;
-    public static final int     MK_WPC2 = 3;
+    public static final int     MK_WPCE = 2;
+    public static final int     MK_WPCW = 3;
         
     public static final int     MK_BPS  = 4;
     public static final int     MK_BPD  = 5;
-    public static final int     MK_BPC1 = 6;
-    public static final int     MK_BPC2 = 7;
+    public static final int     MK_BPCE = 6;
+    public static final int     MK_BPCW = 7;
     
     public static final int     MK_LNN = 8;
     public static final int     MK_LNE = 9;
@@ -47,14 +47,14 @@ public class Constants {
     public static final int     MK_SIMPLE = 10000 + 1;
  
     public static final int[][] _DELTA = {
-        /*MK_WPS:*/ {-2,0},
-        /*MK_WPD:*/ {-1,0},
-        /*MK_WPC1:*/{-1,1},
-        /*MK_WPC2:*/{-1,-1},        
-        /*MK_BPS:*/ {2,0},
-        /*MK_BPD:*/ {1,0},
-        /*MK_BPC1:*/{1,-1},
-        /*MK_BPC2:*/{1,1},
+        /*MK_WPS:*/ {-1,0},
+        /*MK_WPD:*/ {-2,0},
+        /*MK_WPCE:*/{-1,1},
+        /*MK_WPCW:*/{-1,-1},        
+        /*MK_BPS:*/ {1,0},
+        /*MK_BPD:*/ {2,0},
+        /*MK_BPCE:*/{1,1},
+        /*MK_BPCW:*/{1,-1},
         /*MK_LNN:*/ {-1,0},
         /*MK_LNE:*/ {-1,1},
         /*MK_LNW:*/ {-1,-1},
