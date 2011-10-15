@@ -176,7 +176,12 @@ return stringItem;
         
         e.doMove("e2e4");
         e.doMove("e7e5");        
-        
+       
+		System.out.println(e.toString());
+		
+		e.unMove();
+		e.unMove();
+		
 		System.out.println(e.toString());
 		
         e.analize();

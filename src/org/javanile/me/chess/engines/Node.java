@@ -91,7 +91,16 @@ public class Node {
 	public boolean isFileA() {
 		return focus_square.getFile()==0;
 	}
-			
+	public boolean isWhitePiece() {
+		char p = getBoard(focus_square);
+		if ((p=='P')||(p=='N')||(p=='B')||(p=='R')||(p=='Q')||(p=='K')) return true; 
+		return false;
+	}
+    public boolean isBlackPiece() {
+		char p = getBoard(focus_square);
+		if ((p=='p')||(p=='n')||(p=='b')||(p=='r')||(p=='q')||(p=='k')) return true;
+		return false;
+	}
     private void changeTurn() {
         turn = -turn;
     }
@@ -108,7 +117,13 @@ public class Node {
         Square from = focus_square;
         Square to = from.shift(Constants.DELTA(getBoard(from), mk));
         return new Move(getBoard(from),from,to,getBoard(to),mk);
-    }    
+    } 
+	public Move getMove(String s) {
+		Move m = new Move(s);
+		m.setPiece(getBoard(m.getFrom()));
+		m.setCaptured(getBoard(m.getTo()));
+		return m;
+	}
     public Move getMove(Square to, int mk) {
         Square from = focus_square;
         return new Move(getBoard(from),from,to,getBoard(to),mk);

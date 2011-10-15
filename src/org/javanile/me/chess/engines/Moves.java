@@ -29,6 +29,9 @@ public class Moves {
     public void move(Move move) {
         moves.addElement(move);
     }
+	public Move last() {
+		return (Move)moves.lastElement();
+	}
     public void undo() {
         moves.removeElementAt(moves.size()-1);
     }
