@@ -53,6 +53,12 @@ public class Move {
 	public char getPiece() {
 		return piece;
 	}
+	public void setPiece(char p) {
+		piece = p;
+	}
+    public void setCaptured(char p) {
+		captured = p;
+	}
     public char getCaptured() {
 		return captured;
 	}
