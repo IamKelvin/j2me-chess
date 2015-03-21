@@ -1,0 +1,1 @@
+Lightweight chess game to play on blackberry nokia and other phone
